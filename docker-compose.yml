@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile
+    container_name: leiter_web
+    ports:
+      - "80:80"
+    volumes:
+      - ./web:/var/www/html
+      - ./docker/php/apache.conf:/etc/apache2/sites-available/000-default.conf
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - LDAP_HOST=${LDAP_HOST}
+      - LDAP_PORT=${LDAP_PORT}
+      - LDAP_BASE_DN=${LDAP_BASE_DN}
+      - LDAP_BIND_DN=${LDAP_BIND_DN}
+      - LDAP_BIND_PASSWORD=${LDAP_BIND_PASSWORD}
+      - PHP_TIMEZONE=${PHP_TIMEZONE}
+      - PHP_MEMORY_LIMIT=${PHP_MEMORY_LIMIT}
+      - APACHE_SERVER_NAME=${APACHE_SERVER_NAME}
+    depends_on:
+      - database
+    networks:
+      - leiter_network
+
+  database:
+    image: mysql:8.0
+    container_name: leiter_mysql
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/init:/docker-entrypoint-initdb.d
+    ports:
+      - "${DB_EXTERNAL_PORT}:3306"
+    networks:
+      - leiter_network
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  leiter_network:
+    driver: bridge
