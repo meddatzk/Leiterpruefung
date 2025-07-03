@@ -20,6 +20,7 @@ if (!defined('APP_STARTED')) {
     spl_autoload_register(function ($className) {
         $directories = [
             SRC_PATH . '/config/',
+            SRC_PATH . '/includes/',
             SRC_PATH . '/classes/',
             SRC_PATH . '/models/',
             SRC_PATH . '/controllers/',
@@ -41,6 +42,13 @@ if (!defined('APP_STARTED')) {
     require_once CONFIG_PATH . '/config.php';
     require_once CONFIG_PATH . '/database.php';
     require_once INCLUDES_PATH . '/functions.php';
+    
+    // Authentifizierungsklassen laden
+    require_once INCLUDES_PATH . '/LdapAuth.php';
+    require_once INCLUDES_PATH . '/SessionManager.php';
+    require_once INCLUDES_PATH . '/User.php';
+    require_once INCLUDES_PATH . '/auth_middleware.php';
+    require_once INCLUDES_PATH . '/TemplateEngine.php';
 
     // Konfiguration initialisieren
     Config::load();

@@ -12,27 +12,33 @@ COLLATE utf8mb4_unicode_ci;
 USE leiterprüfung;
 
 -- =====================================================
--- Tabelle: users (Benutzer-Cache)
+-- Tabelle: users (Benutzer-Cache für LDAP)
 -- =====================================================
 DROP TABLE IF EXISTS users;
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(100) NOT NULL UNIQUE,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    full_name VARCHAR(255) NOT NULL,
-    role ENUM('admin', 'inspector', 'viewer') NOT NULL DEFAULT 'viewer',
-    department VARCHAR(100),
-    phone VARCHAR(50),
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    last_login TIMESTAMP NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    username VARCHAR(100) NOT NULL UNIQUE COMMENT 'LDAP-Benutzername',
+    email VARCHAR(255) DEFAULT NULL COMMENT 'E-Mail-Adresse aus LDAP',
+    first_name VARCHAR(100) DEFAULT NULL COMMENT 'Vorname aus LDAP',
+    last_name VARCHAR(100) DEFAULT NULL COMMENT 'Nachname aus LDAP',
+    display_name VARCHAR(255) DEFAULT NULL COMMENT 'Anzeigename aus LDAP',
+    groups JSON DEFAULT NULL COMMENT 'LDAP-Gruppen als JSON-Array',
+    ldap_dn VARCHAR(500) DEFAULT NULL COMMENT 'LDAP Distinguished Name',
+    role ENUM('admin', 'inspector', 'viewer') NOT NULL DEFAULT 'viewer' COMMENT 'Lokale Rolle (zusätzlich zu LDAP-Gruppen)',
+    department VARCHAR(100) DEFAULT NULL COMMENT 'Abteilung',
+    phone VARCHAR(50) DEFAULT NULL COMMENT 'Telefonnummer',
+    is_active BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'Benutzer aktiv',
+    last_login TIMESTAMP NULL COMMENT 'Letzte Anmeldung',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Erstellt am',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Aktualisiert am',
     
     INDEX idx_username (username),
     INDEX idx_email (email),
     INDEX idx_role (role),
-    INDEX idx_active (is_active)
-) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    INDEX idx_active (is_active),
+    INDEX idx_last_login (last_login),
+    INDEX idx_ldap_dn (ldap_dn(255))
+) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT='Benutzer-Cache für LDAP-Authentifizierung';
 
 -- =====================================================
 -- Tabelle: ladders (Leitern-Stammdaten)
