@@ -1,0 +1,529 @@
+/**
+ * Dashboard CSS
+ * Styling für das Dashboard mit responsivem Design und modernem Look
+ */
+
+/* Dashboard Container */
+.dashboard-container {
+    padding: 0;
+    background-color: #f8f9fa;
+    min-height: calc(100vh - 120px);
+}
+
+/* Dashboard Header */
+.dashboard-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem 1.5rem;
+    margin: -1rem -1rem 2rem -1rem;
+    border-radius: 0 0 15px 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.dashboard-subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin-bottom: 0;
+}
+
+.dashboard-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.last-update {
+    font-size: 0.875rem;
+    opacity: 0.8;
+    white-space: nowrap;
+}
+
+/* Dashboard Cards */
+.dashboard-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    background: white;
+    overflow: hidden;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+}
+
+.dashboard-card .card-header {
+    background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+    border-bottom: 1px solid #dee2e6;
+    padding: 1rem 1.5rem;
+    font-weight: 600;
+}
+
+.dashboard-card .card-body {
+    padding: 1.5rem;
+}
+
+/* Statistik-Karten */
+.dashboard-stat-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.dashboard-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--bs-primary), var(--bs-info));
+}
+
+.dashboard-stat-card .card-body {
+    padding: 1.5rem;
+}
+
+.dashboard-stat-card .text-xs {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.dashboard-stat-card .h5 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.dashboard-stat-card i {
+    opacity: 0.8;
+}
+
+/* Farbvarianten für Statistik-Karten */
+.border-primary::before { background: linear-gradient(90deg, #007bff, #0056b3); }
+.border-success::before { background: linear-gradient(90deg, #28a745, #1e7e34); }
+.border-warning::before { background: linear-gradient(90deg, #ffc107, #e0a800); }
+.border-danger::before { background: linear-gradient(90deg, #dc3545, #c82333); }
+.border-info::before { background: linear-gradient(90deg, #17a2b8, #117a8b); }
+
+/* Tabellen */
+.dashboard-table {
+    margin-bottom: 0;
+}
+
+.dashboard-table th {
+    background-color: #f8f9fa;
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 1rem 0.75rem;
+}
+
+.dashboard-table td {
+    padding: 0.875rem 0.75rem;
+    vertical-align: middle;
+    border-top: 1px solid #f1f3f4;
+}
+
+.dashboard-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Badges */
+.badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.375rem 0.75rem;
+    border-radius: 6px;
+}
+
+/* Activity List */
+.activity-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.activity-item {
+    transition: background-color 0.2s ease;
+}
+
+.activity-item:hover {
+    background-color: #f8f9fa;
+}
+
+.activity-item:last-child {
+    border-bottom: none !important;
+}
+
+.activity-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.activity-content {
+    min-width: 0;
+}
+
+.activity-title {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.activity-details {
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+/* Charts */
+.chart-container {
+    position: relative;
+    height: 300px;
+    margin: 1rem 0;
+}
+
+.chart-container canvas {
+    max-height: 100%;
+}
+
+/* User Stats */
+.user-stats .stat-item {
+    padding: 0.5rem;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    transition: all 0.2s ease;
+}
+
+.user-stats .stat-item:hover {
+    background-color: #e9ecef;
+    transform: scale(1.02);
+}
+
+.user-stats .stat-value {
+    color: #2c3e50;
+    margin-bottom: 0.25rem;
+}
+
+.user-stats .stat-label {
+    font-size: 0.75rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+/* Location Stats */
+.location-stats .location-item {
+    transition: all 0.2s ease;
+}
+
+.location-stats .location-item:hover {
+    background-color: #e9ecef !important;
+    transform: translateX(5px);
+}
+
+/* Department Stats */
+.department-stats .table td,
+.department-stats .table th {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .dashboard-header {
+        padding: 1.5rem 1rem;
+        margin: -1rem -1rem 1.5rem -1rem;
+    }
+    
+    .dashboard-title {
+        font-size: 2rem;
+    }
+    
+    .dashboard-controls {
+        margin-top: 1rem;
+        justify-content: center;
+    }
+    
+    .dashboard-controls .btn {
+        font-size: 0.875rem;
+        padding: 0.375rem 0.75rem;
+    }
+    
+    .last-update {
+        font-size: 0.75rem;
+        text-align: center;
+        width: 100%;
+    }
+    
+    .dashboard-stat-card .h5 {
+        font-size: 1.5rem;
+    }
+    
+    .dashboard-card .card-body {
+        padding: 1rem;
+    }
+    
+    .activity-item {
+        padding: 0.75rem !important;
+    }
+    
+    .activity-icon {
+        width: 32px;
+        height: 32px;
+        margin-right: 0.75rem;
+    }
+    
+    .chart-container {
+        height: 250px;
+    }
+}
+
+@media (max-width: 576px) {
+    .dashboard-header {
+        text-align: center;
+    }
+    
+    .dashboard-title {
+        font-size: 1.75rem;
+    }
+    
+    .dashboard-subtitle {
+        font-size: 1rem;
+    }
+    
+    .dashboard-stat-card .h5 {
+        font-size: 1.25rem;
+    }
+    
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+    
+    .dashboard-table th,
+    .dashboard-table td {
+        padding: 0.5rem 0.25rem;
+    }
+    
+    .btn-sm {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+}
+
+/* Loading States */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+.slide-in {
+    animation: slideIn 0.3s ease-out;
+}
+
+/* Toast Messages */
+.toast-message {
+    border-radius: 8px;
+    border: none;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Widget Toggle */
+.widget-toggle {
+    background: none;
+    border: none;
+    color: #6c757d;
+    font-size: 0.875rem;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.widget-toggle:hover {
+    background-color: #f8f9fa;
+    color: #495057;
+}
+
+/* Scrollbars */
+.activity-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.activity-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.activity-list::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.activity-list::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Print Styles */
+@media print {
+    .dashboard-header {
+        background: white !important;
+        color: black !important;
+        box-shadow: none !important;
+    }
+    
+    .dashboard-card {
+        box-shadow: none !important;
+        border: 1px solid #dee2e6 !important;
+        break-inside: avoid;
+    }
+    
+    .btn, .dropdown {
+        display: none !important;
+    }
+    
+    .chart-container {
+        height: 200px !important;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    .dashboard-container {
+        background-color: #1a1a1a;
+    }
+    
+    .dashboard-card {
+        background-color: #2d2d2d;
+        color: #e9ecef;
+    }
+    
+    .dashboard-card .card-header {
+        background: linear-gradient(45deg, #2d2d2d, #3d3d3d);
+        border-bottom-color: #495057;
+    }
+    
+    .dashboard-table th {
+        background-color: #3d3d3d;
+        color: #e9ecef;
+    }
+    
+    .dashboard-table td {
+        border-top-color: #495057;
+    }
+    
+    .dashboard-table tbody tr:hover {
+        background-color: #3d3d3d;
+    }
+    
+    .activity-item:hover {
+        background-color: #3d3d3d;
+    }
+    
+    .activity-icon {
+        background-color: #3d3d3d;
+    }
+    
+    .user-stats .stat-item {
+        background-color: #3d3d3d;
+    }
+    
+    .user-stats .stat-item:hover {
+        background-color: #495057;
+    }
+}
+
+/* Accessibility */
+.dashboard-card:focus-within {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+}
+
+.btn:focus {
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+    .dashboard-card {
+        border: 2px solid #000;
+    }
+    
+    .badge {
+        border: 1px solid currentColor;
+    }
+    
+    .btn {
+        border: 2px solid currentColor;
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .dashboard-card:hover {
+        transform: none;
+    }
+    
+    .user-stats .stat-item:hover {
+        transform: none;
+    }
+    
+    .location-stats .location-item:hover {
+        transform: none;
+    }
+}
