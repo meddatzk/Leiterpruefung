@@ -1,0 +1,423 @@
+FROM php:8.1-apache
+
+# ==============================================
+# PRODUCTION PHP DOCKERFILE
+# ==============================================
+
+# Build Arguments
+ARG BUILD_DATE
+ARG VCS_REF
+ARG VERSION
+
+# Labels für Container-Metadaten
+LABEL maintainer="admin@example.com" \
+      org.label-schema.build-date=$BUILD_DATE \
+      org.label-schema.name="Leiterprüfung Production" \
+      org.label-schema.description="Production PHP Apache Container für Leiterprüfung System" \
+      org.label-schema.url="https://github.com/meddatzk/Leiterpruefung" \
+      org.label-schema.vcs-ref=$VCS_REF \
+      org.label-schema.vcs-url="https://github.com/meddatzk/Leiterpruefung" \
+      org.label-schema.vendor="Leiterprüfung Team" \
+      org.label-schema.version=$VERSION \
+      org.label-schema.schema-version="1.0"
+
+# Installiere System-Dependencies für Production
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # Core Dependencies
+    libldap2-dev \
+    libssl-dev \
+    libsasl2-dev \
+    libzip-dev \
+    libpng-dev \
+    libjpeg62-turbo-dev \
+    libfreetype6-dev \
+    libicu-dev \
+    libxml2-dev \
+    libxslt-dev \
+    # Security Tools
+    ca-certificates \
+    # Monitoring Tools
+    curl \
+    # Log Rotation
+    logrotate \
+    # Cleanup Tools
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /tmp/* \
+    && rm -rf /var/tmp/*
+
+# Konfiguriere und installiere PHP Extensions
+RUN docker-php-ext-configure ldap --with-libdir=lib/x86_64-linux-gnu/ \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
+    pdo_mysql \
+    ldap \
+    zip \
+    gd \
+    intl \
+    xml \
+    xsl \
+    opcache \
+    bcmath \
+    exif \
+    gettext \
+    sockets \
+    && docker-php-ext-enable opcache
+
+# Installiere und konfiguriere Redis Extension
+RUN pecl install redis \
+    && docker-php-ext-enable redis
+
+# Aktiviere Apache Module für Production
+RUN a2enmod rewrite \
+    && a2enmod headers \
+    && a2enmod ssl \
+    && a2enmod expires \
+    && a2enmod deflate \
+    && a2enmod status \
+    && a2enmod info \
+    && a2dismod autoindex \
+    && a2dismod negotiation \
+    && a2dismod userdir
+
+# PHP Production Konfiguration
+COPY <<EOF /usr/local/etc/php/conf.d/00-production.ini
+; ==============================================
+; PHP PRODUCTION KONFIGURATION
+; ==============================================
+
+; Basis Konfiguration
+date.timezone = \${PHP_TIMEZONE}
+memory_limit = \${PHP_MEMORY_LIMIT}
+max_execution_time = 30
+max_input_time = 60
+max_input_vars = 3000
+
+; Upload Limits
+upload_max_filesize = 10M
+post_max_size = 10M
+max_file_uploads = 20
+
+; Session Konfiguration
+session.cookie_secure = 1
+session.cookie_httponly = 1
+session.use_strict_mode = 1
+session.cookie_samesite = "Strict"
+session.gc_maxlifetime = 3600
+session.gc_probability = 1
+session.gc_divisor = 100
+
+; Sicherheits-Einstellungen
+expose_php = Off
+allow_url_fopen = Off
+allow_url_include = Off
+enable_dl = Off
+file_uploads = On
+auto_globals_jit = On
+
+; Error Handling für Production
+display_errors = Off
+display_startup_errors = Off
+log_errors = On
+error_log = /var/log/php/error.log
+log_errors_max_len = 1024
+ignore_repeated_errors = On
+ignore_repeated_source = On
+html_errors = Off
+
+; Logging
+syslog.ident = "leiter-php"
+syslog.facility = "daemon"
+syslog.filter = "ascii"
+EOF
+
+# OPcache Optimierung für Production
+COPY <<EOF /usr/local/etc/php/conf.d/10-opcache.ini
+; ==============================================
+; OPCACHE PRODUCTION KONFIGURATION
+; ==============================================
+
+; OPcache aktivieren
+opcache.enable = 1
+opcache.enable_cli = 0
+
+; Memory Konfiguration
+opcache.memory_consumption = 256
+opcache.interned_strings_buffer = 16
+opcache.max_accelerated_files = 10000
+
+; Performance Optimierung
+opcache.revalidate_freq = 60
+opcache.validate_timestamps = 0
+opcache.save_comments = 0
+opcache.fast_shutdown = 1
+
+; File Cache für bessere Performance
+opcache.file_cache = /tmp/opcache
+opcache.file_cache_only = 0
+opcache.file_cache_consistency_checks = 0
+
+; Optimization Level
+opcache.optimization_level = 0x7FFEBFFF
+
+; JIT Konfiguration (PHP 8.0+)
+opcache.jit_buffer_size = 64M
+opcache.jit = 1255
+
+; Preloading (falls verwendet)
+; opcache.preload = /var/www/html/preload.php
+; opcache.preload_user = www-data
+
+; Monitoring
+opcache.enable_file_override = 0
+opcache.blacklist_filename = /usr/local/etc/php/opcache-blacklist.txt
+EOF
+
+# Redis Konfiguration
+COPY <<EOF /usr/local/etc/php/conf.d/20-redis.ini
+; ==============================================
+; REDIS KONFIGURATION
+; ==============================================
+
+; Redis Session Handler
+session.save_handler = redis
+session.save_path = "tcp://redis:6379?weight=1&timeout=2.5&database=0"
+
+; Redis Konfiguration
+redis.session.locking_enabled = 1
+redis.session.lock_expire = 60
+redis.session.lock_wait_time = 50000
+EOF
+
+# Erstelle notwendige Verzeichnisse
+RUN mkdir -p /var/log/php \
+    && mkdir -p /tmp/opcache \
+    && mkdir -p /var/www/html \
+    && mkdir -p /var/cache/apache2 \
+    && mkdir -p /var/run/apache2 \
+    && mkdir -p /var/lock/apache2
+
+# Setze Berechtigungen für Production
+RUN chown -R www-data:www-data /var/www/html \
+    && chown -R www-data:www-data /var/log/php \
+    && chown -R www-data:www-data /tmp/opcache \
+    && chown -R www-data:www-data /var/cache/apache2 \
+    && chown -R www-data:www-data /var/run/apache2 \
+    && chown -R www-data:www-data /var/lock/apache2 \
+    && chmod -R 755 /var/www/html \
+    && chmod -R 755 /var/log/php \
+    && chmod -R 755 /tmp/opcache
+
+# Apache Production Konfiguration
+RUN echo "ServerTokens Prod" >> /etc/apache2/apache2.conf \
+    && echo "ServerSignature Off" >> /etc/apache2/apache2.conf \
+    && echo "TraceEnable Off" >> /etc/apache2/apache2.conf \
+    && echo "Header unset Server" >> /etc/apache2/apache2.conf \
+    && echo "Header always unset X-Powered-By" >> /etc/apache2/apache2.conf
+
+# Logrotate Konfiguration
+COPY <<EOF /etc/logrotate.d/leiter
+/var/log/php/*.log {
+    daily
+    missingok
+    rotate 30
+    compress
+    delaycompress
+    notifempty
+    create 644 www-data www-data
+    postrotate
+        /usr/sbin/service apache2 reload > /dev/null 2>&1 || true
+    endscript
+}
+
+/var/log/apache2/*.log {
+    daily
+    missingok
+    rotate 30
+    compress
+    delaycompress
+    notifempty
+    create 644 www-data www-data
+    sharedscripts
+    postrotate
+        /usr/sbin/service apache2 reload > /dev/null 2>&1 || true
+    endscript
+}
+EOF
+
+# Health Check Script
+COPY <<EOF /usr/local/bin/health-check.php
+<?php
+// ==============================================
+// HEALTH CHECK SCRIPT
+// ==============================================
+
+header('Content-Type: application/json');
+
+\$health = [
+    'status' => 'healthy',
+    'timestamp' => date('c'),
+    'checks' => []
+];
+
+// PHP Check
+\$health['checks']['php'] = [
+    'status' => 'ok',
+    'version' => PHP_VERSION
+];
+
+// OPcache Check
+if (function_exists('opcache_get_status')) {
+    \$opcache = opcache_get_status();
+    \$health['checks']['opcache'] = [
+        'status' => \$opcache ? 'ok' : 'error',
+        'enabled' => \$opcache['opcache_enabled'] ?? false,
+        'memory_usage' => \$opcache['memory_usage'] ?? null
+    ];
+}
+
+// Database Check (falls verfügbar)
+try {
+    if (getenv('DB_HOST')) {
+        \$pdo = new PDO(
+            'mysql:host=' . getenv('DB_HOST') . ';port=' . getenv('DB_PORT'),
+            getenv('DB_USER'),
+            getenv('DB_PASSWORD'),
+            [PDO::ATTR_TIMEOUT => 5]
+        );
+        \$health['checks']['database'] = ['status' => 'ok'];
+    }
+} catch (Exception \$e) {
+    \$health['checks']['database'] = [
+        'status' => 'error',
+        'message' => 'Database connection failed'
+    ];
+    \$health['status'] = 'unhealthy';
+}
+
+// Redis Check (falls verfügbar)
+try {
+    if (class_exists('Redis')) {
+        \$redis = new Redis();
+        \$redis->connect('redis', 6379, 2);
+        \$redis->ping();
+        \$health['checks']['redis'] = ['status' => 'ok'];
+        \$redis->close();
+    }
+} catch (Exception \$e) {
+    \$health['checks']['redis'] = [
+        'status' => 'error',
+        'message' => 'Redis connection failed'
+    ];
+}
+
+// Disk Space Check
+\$diskFree = disk_free_space('/var/www/html');
+\$diskTotal = disk_total_space('/var/www/html');
+\$diskUsage = ((\$diskTotal - \$diskFree) / \$diskTotal) * 100;
+
+\$health['checks']['disk'] = [
+    'status' => \$diskUsage < 90 ? 'ok' : 'warning',
+    'usage_percent' => round(\$diskUsage, 2)
+];
+
+// Memory Check
+\$memoryUsage = memory_get_usage(true);
+\$memoryLimit = ini_get('memory_limit');
+\$memoryLimitBytes = \$memoryLimit === '-1' ? PHP_INT_MAX : 
+    (int)(\$memoryLimit) * (strpos(\$memoryLimit, 'M') ? 1024*1024 : 
+    (strpos(\$memoryLimit, 'G') ? 1024*1024*1024 : 1));
+
+\$health['checks']['memory'] = [
+    'status' => \$memoryUsage < (\$memoryLimitBytes * 0.8) ? 'ok' : 'warning',
+    'usage_bytes' => \$memoryUsage,
+    'limit_bytes' => \$memoryLimitBytes
+];
+
+// Response
+http_response_code(\$health['status'] === 'healthy' ? 200 : 503);
+echo json_encode(\$health, JSON_PRETTY_PRINT);
+EOF
+
+# Kopiere Health Check Script
+RUN cp /usr/local/bin/health-check.php /var/www/html/health.php \
+    && chown www-data:www-data /var/www/html/health.php \
+    && chmod 644 /var/www/html/health.php
+
+# Startup Script für Production
+COPY <<EOF /usr/local/bin/docker-entrypoint-prod.sh
+#!/bin/bash
+set -e
+
+# ==============================================
+# PRODUCTION STARTUP SCRIPT
+# ==============================================
+
+echo "Starting Leiterprüfung Production Container..."
+
+# Erstelle Log-Verzeichnisse falls nicht vorhanden
+mkdir -p /var/log/php
+mkdir -p /var/log/apache2
+chown -R www-data:www-data /var/log/php
+chown -R www-data:www-data /var/log/apache2
+
+# OPcache Verzeichnis erstellen
+mkdir -p /tmp/opcache
+chown -R www-data:www-data /tmp/opcache
+
+# Warte auf Datenbank
+if [ -n "\$DB_HOST" ]; then
+    echo "Waiting for database..."
+    while ! nc -z \$DB_HOST \$DB_PORT; do
+        sleep 1
+    done
+    echo "Database is ready!"
+fi
+
+# Warte auf Redis
+if [ -n "\$REDIS_HOST" ]; then
+    echo "Waiting for Redis..."
+    while ! nc -z redis 6379; do
+        sleep 1
+    done
+    echo "Redis is ready!"
+fi
+
+# OPcache aufwärmen (falls Preload-Script vorhanden)
+if [ -f "/var/www/html/preload.php" ]; then
+    echo "Warming up OPcache..."
+    php /var/www/html/preload.php
+fi
+
+# Setze finale Berechtigungen
+chown -R www-data:www-data /var/www/html
+find /var/www/html -type f -exec chmod 644 {} \;
+find /var/www/html -type d -exec chmod 755 {} \;
+
+# Starte Logrotate im Hintergrund
+(while true; do sleep 86400; logrotate -f /etc/logrotate.d/leiter; done) &
+
+echo "Production container is ready!"
+
+# Starte Apache
+exec apache2-foreground
+EOF
+
+# Mache Startup Script ausführbar
+RUN chmod +x /usr/local/bin/docker-entrypoint-prod.sh
+
+# Setze Arbeitsverzeichnis
+WORKDIR /var/www/html
+
+# Exponiere Ports
+EXPOSE 80 443
+
+# Setze Non-Root User für bessere Sicherheit
+USER www-data
+
+# Health Check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost/health.php || exit 1
+
+# Startup Command
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint-prod.sh"]

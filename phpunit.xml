@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd"
+         bootstrap="tests/setup/TestDatabase.php"
+         colors="true"
+         verbose="true"
+         stopOnFailure="false"
+         processIsolation="false"
+         backupGlobals="false"
+         backupStaticAttributes="false"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true">
+
+    <!-- Test-Suites Definition -->
+    <testsuites>
+        <testsuite name="Unit Tests">
+            <directory>tests/unit</directory>
+        </testsuite>
+        
+        <testsuite name="Integration Tests">
+            <directory>tests/integration</directory>
+        </testsuite>
+        
+        <testsuite name="Functional Tests">
+            <directory>tests/functional</directory>
+        </testsuite>
+        
+        <testsuite name="All Tests">
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
+
+    <!-- Source-Code für Coverage -->
+    <source>
+        <include>
+            <directory suffix=".php">web/src/includes</directory>
+        </include>
+        <exclude>
+            <directory>web/src/includes/vendor</directory>
+            <file>web/src/includes/bootstrap.php</file>
+        </exclude>
+    </source>
+
+    <!-- Coverage-Reports -->
+    <coverage>
+        <report>
+            <html outputDirectory="tests/coverage/html"/>
+            <text outputFile="tests/coverage/coverage.txt"/>
+            <xml outputDirectory="tests/coverage/xml"/>
+        </report>
+    </coverage>
+
+    <!-- Logging -->
+    <logging>
+        <junit outputFile="tests/logs/junit.xml"/>
+        <teamcity outputFile="tests/logs/teamcity.txt"/>
+    </logging>
+
+    <!-- PHP-Einstellungen für Tests -->
+    <php>
+        <ini name="error_reporting" value="-1"/>
+        <ini name="memory_limit" value="512M"/>
+        <ini name="display_errors" value="1"/>
+        <ini name="display_startup_errors" value="1"/>
+        
+        <!-- Test-Environment Variables -->
+        <env name="APP_ENV" value="testing"/>
+        <env name="DB_CONNECTION" value="sqlite"/>
+        <env name="DB_DATABASE" value=":memory:"/>
+        
+        <!-- LDAP-Test-Konfiguration -->
+        <env name="LDAP_ENABLED" value="false"/>
+        <env name="LDAP_TEST_MODE" value="true"/>
+    </php>
+
+    <!-- Extensions -->
+    <extensions>
+        <!-- Hier können PHPUnit-Extensions hinzugefügt werden -->
+    </extensions>
+</phpunit>
