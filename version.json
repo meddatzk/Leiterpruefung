@@ -1,0 +1,13 @@
+{
+  "version": "1.0.0",
+  "major": 1,
+  "minor": 0,
+  "patch": 0,
+  "prerelease": null,
+  "build": null,
+  "lastUpdated": "2025-01-04T16:47:00.000Z",
+  "gitTag": "v1.0.0",
+  "branch": "main",
+  "commit": null,
+  "releaseNotes": "Initial release of Leiterpruefung - Ladder Inspection Management System"
+}
